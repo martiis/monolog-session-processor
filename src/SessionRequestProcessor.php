@@ -20,13 +20,20 @@ class SessionRequestProcessor
     private $token;
 
     /**
+     * @var string
+     */
+    private $prefix;
+
+    /**
      * SessionRequestProcessor constructor.
      *
      * @param SessionInterface $session
+     * @param string           $prefix
      */
-    public function __construct(SessionInterface $session)
+    public function __construct(SessionInterface $session, $prefix = '')
     {
         $this->session = $session;
+        $this->prefix = $prefix;
     }
 
     /**
@@ -44,10 +51,23 @@ class SessionRequestProcessor
             } catch (\RuntimeException $e) {
                 $this->token = '????????';
             }
-            $this->token .= '-' . substr(uniqid(), -8);
+            $this->token = $this->hash($this->token);
         }
+
         $record['extra']['token'] = $this->token;
 
         return $record;
+    }
+
+    /**
+     * Hashes session session id.
+     *
+     * @param string $string
+     *
+     * @return string
+     */
+    private function hash($string)
+    {
+        return md5($this->prefix . sha1($string));
     }
 }
